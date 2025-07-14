@@ -1,0 +1,536 @@
+openapi: 3.0.3
+info:
+  title: Workflow 3 API
+  version: '85'
+  description: A process for ordering home delivery of food
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Development Server
+tags:
+  - name: Order
+    description: Operations related to the Order bounded context.
+  - name: Payment
+    description: Operations related to the Payment bounded context.
+  - name: Delivery
+    description: Operations related to the Delivery bounded context.
+paths:
+  /orders:
+    post:
+      summary: Receive Order
+      description: Executes the "Receive Order" command. This is an asynchronous operation that results in one or more events.
+      operationId: receiveOrder
+      tags:
+        - Order
+      responses:
+        '201':
+          description: 'Created: The resource was created successfully.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '202':
+          description: 'Accepted: The command has been accepted for processing.'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiveOrderRequest'
+    get:
+      summary: Fetch Order History
+      description: Retrieves a representation of a Order or a list of them. This is a synchronous query operation.
+      operationId: fetchOrderHistory
+      tags:
+        - Order
+      responses:
+        '200':
+          description: Successful retrieval of data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /orders/{orderID}:
+    put:
+      summary: Update Order Status
+      description: Executes the "Update Order Status" command. This is an asynchronous operation that results in one or more events.
+      operationId: updateOrderStatus
+      tags:
+        - Order
+      responses:
+        '200':
+          description: 'OK: The resource was updated successfully.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderStatusRequest'
+  /payments:
+    post:
+      summary: Process Payment
+      description: Executes the "Process Payment" command. This is an asynchronous operation that results in one or more events.
+      operationId: processPayment
+      tags:
+        - Payment
+      responses:
+        '201':
+          description: 'Created: The resource was created successfully.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '202':
+          description: 'Accepted: The command has been accepted for processing.'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessPaymentRequest'
+    get:
+      summary: Fetch Payment Details
+      description: Retrieves a representation of a Payment or a list of them. This is a synchronous query operation.
+      operationId: fetchPaymentDetails
+      tags:
+        - Payment
+      responses:
+        '200':
+          description: Successful retrieval of data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /deliverys:
+    post:
+      summary: Deliver Order
+      description: Executes the "Deliver Order" command. This is an asynchronous operation that results in one or more events.
+      operationId: deliverOrder
+      tags:
+        - Delivery
+      responses:
+        '201':
+          description: 'Created: The resource was created successfully.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Delivery'
+        '202':
+          description: 'Accepted: The command has been accepted for processing.'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliverOrderRequest'
+    get:
+      summary: Track Delivery Status
+      description: Retrieves a representation of a Delivery or a list of them. This is a synchronous query operation.
+      operationId: trackDeliveryStatus
+      tags:
+        - Delivery
+      responses:
+        '200':
+          description: Successful retrieval of data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Delivery'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: An error occurred.
+        code:
+          type: string
+          example: ERROR_CODE
+    Order:
+      type: object
+      description: Represents a Order in the system.
+      properties:
+        orderID:
+          type: string
+          description: The Order ID of the Order.
+          example: ORD001
+        customerName:
+          type: string
+          description: The Customer Name of the Order.
+          example: John Doe
+        contactNumber:
+          type: integer
+          description: The Contact Number of the Order.
+          example: '1234567890'
+        deliveryAddress:
+          type: string
+          description: The Delivery Address of the Order.
+          example: 123 Elm St
+        menuItem:
+          type: string
+          description: The Menu Item of the Order.
+          example: Pizza
+        quantity:
+          type: integer
+          description: The Quantity of the Order.
+          example: '2'
+        specialInstructions:
+          type: string
+          description: The Special Instructions of the Order.
+          example: Extra cheese
+        totalAmount:
+          type: integer
+          description: The Total Amount of the Order.
+          example: '20.00'
+        paymentMethod:
+          type: string
+          description: The Payment Method of the Order.
+          example: Credit Card
+        confirmationCode:
+          type: string
+          description: The Confirmation Code of the Order.
+          example: CONF123
+        newStatus:
+          type: string
+          description: The New Status of the Order.
+          example: Pending
+      required:
+        - orderID
+        - customerName
+        - contactNumber
+        - deliveryAddress
+        - menuItem
+        - quantity
+        - totalAmount
+        - paymentMethod
+    Payment:
+      type: object
+      description: Represents a Payment in the system.
+      properties:
+        transactionID:
+          type: string
+          description: The Transaction ID of the Payment.
+          example: TXN001
+        orderID:
+          type: string
+          description: The Order ID of the Payment.
+          example: ORD001
+        paymentAmount:
+          type: integer
+          description: The Payment Amount of the Payment.
+          example: '20.00'
+        paymentMethod:
+          type: string
+          description: The Payment Method of the Payment.
+          example: Credit Card
+      required:
+        - transactionID
+        - orderID
+        - paymentAmount
+        - paymentMethod
+    Delivery:
+      type: object
+      description: Represents a Delivery in the system.
+      properties:
+        deliveryID:
+          type: string
+          description: The Delivery ID of the Delivery.
+          example: DEL001
+        orderID:
+          type: string
+          description: The Order ID of the Delivery.
+          example: ORD001
+        deliveryPersonName:
+          type: string
+          description: The Delivery Person Name of the Delivery.
+          example: Mike Johnson
+        pickupTime:
+          type: string
+          description: The Pickup Time of the Delivery.
+          example: 10:00 AM
+        deliveryTime:
+          type: string
+          description: The Delivery Time of the Delivery.
+          example: 10:30 AM
+        recipientName:
+          type: string
+          description: The Recipient Name of the Delivery.
+          example: John Doe
+        deliveryConfirmation:
+          type: string
+          description: The Delivery Confirmation of the Delivery.
+          example: 'Yes'
+      required:
+        - deliveryID
+        - orderID
+        - deliveryPersonName
+        - pickupTime
+        - deliveryTime
+        - recipientName
+    Customer:
+      type: object
+      description: Represents a Customer in the system.
+      properties:
+        customerID:
+          type: string
+          description: The Customer ID of the Customer.
+          example: CUST001
+        customerName:
+          type: string
+          description: The Customer Name of the Customer.
+          example: John Doe
+        contactNumber:
+          type: integer
+          description: The Contact Number of the Customer.
+          example: '1234567890'
+        deliveryAddress:
+          type: string
+          description: The Delivery Address of the Customer.
+          example: 123 Elm St
+      required:
+        - customerID
+        - customerName
+        - contactNumber
+        - deliveryAddress
+    CreateOrderRequest:
+      type: object
+      properties:
+        customerName:
+          type: string
+          example: John Doe
+        contactNumber:
+          type: integer
+          example: '1234567890'
+        deliveryAddress:
+          type: string
+          example: 123 Elm St
+        menuItem:
+          type: string
+          example: Pizza
+        quantity:
+          type: integer
+          example: '2'
+        specialInstructions:
+          type: string
+          example: Extra cheese
+      required:
+        - customerName
+        - contactNumber
+        - deliveryAddress
+        - menuItem
+        - quantity
+    ValidateOrderRequest:
+      type: object
+      properties:
+        customerID:
+          type: string
+        menuItemList:
+          type: string
+        totalAmount:
+          type: integer
+          example: '20.00'
+      required:
+        - totalAmount
+    UpdateOrderRequest:
+      type: object
+      properties:
+        menuItem:
+          type: string
+          example: Pizza
+        quantity:
+          type: integer
+          example: '2'
+        specialInstructions:
+          type: string
+          example: Extra cheese
+      required:
+        - menuItem
+        - quantity
+    CalculateTotalRequest:
+      type: object
+      properties:
+        menuItemList:
+          type: string
+        itemPrices:
+          type: string
+        discounts:
+          type: string
+        taxes:
+          type: string
+    ConfirmOrderRequest:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          example: Credit Card
+        confirmationCode:
+          type: string
+          example: CONF123
+      required:
+        - paymentMethod
+    ProcessPaymentRequest:
+      type: object
+      properties:
+        orderID:
+          type: string
+          example: ORD001
+        paymentMethod:
+          type: string
+          example: Credit Card
+        paymentAmount:
+          type: integer
+          example: '20.00'
+      required:
+        - orderID
+        - paymentMethod
+        - paymentAmount
+    PrepareFoodRequest:
+      type: object
+      properties:
+        preparationTime:
+          type: string
+        chefName:
+          type: string
+    PickUpDeliveryRequest:
+      type: object
+      properties:
+        orderID:
+          type: string
+          example: ORD001
+        deliveryPersonName:
+          type: string
+          example: Mike Johnson
+        pickupTime:
+          type: string
+          example: 10:00 AM
+      required:
+        - orderID
+        - deliveryPersonName
+        - pickupTime
+    DeliverOrderRequest:
+      type: object
+      properties:
+        orderID:
+          type: string
+          example: ORD001
+        deliveryTime:
+          type: string
+          example: 10:30 AM
+        recipientName:
+          type: string
+          example: John Doe
+        deliveryConfirmation:
+          type: string
+          example: 'Yes'
+      required:
+        - orderID
+        - deliveryTime
+        - recipientName
+    ReceiveOrderRequest:
+      type: object
+      properties:
+        customerName:
+          type: string
+          example: John Doe
+        deliveryFeedback:
+          type: string
+      required:
+        - customerName
+    UpdateOrderStatusRequest:
+      type: object
+      properties:
+        newStatus:
+          type: string
+          example: Pending
+        timestamp:
+          type: string
+  parameters:
+    OrderId:
+      name: orderID
+      in: path
+      required: true
+      description: The unique identifier for the Order.
+      schema:
+        type: string
+    PaymentId:
+      name: transactionID
+      in: path
+      required: true
+      description: The unique identifier for the Payment.
+      schema:
+        type: string
+    DeliveryId:
+      name: deliveryID
+      in: path
+      required: true
+      description: The unique identifier for the Delivery.
+      schema:
+        type: string
+    CustomerId:
+      name: customerID
+      in: path
+      required: true
+      description: The unique identifier for the Customer.
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: 'Bad Request: The server cannot or will not process the request due to something that is perceived to be a client error.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: 'Not Found: The server can not find the requested resource.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: 'Internal Server Error: The server has encountered a situation it doesn''t know how to handle.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
